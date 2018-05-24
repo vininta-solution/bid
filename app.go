@@ -18,7 +18,7 @@ var allAds map[int]ads.Ads
 
 type pickRequest struct {
 	MinBid   float64 `json:"minBid"`
-	Category int     `category:"category"`
+	Category []int   `category:"category"`
 }
 
 func main() {
@@ -27,6 +27,7 @@ func main() {
 	r.HandleFunc("/", homeHandler)
 	r.HandleFunc("/add", addHandler)
 	r.HandleFunc("/delete", deleteHandler)
+	r.HandleFunc("/clear", clearHandler)
 	r.HandleFunc("/list", listHandler)
 	r.HandleFunc("/runtime-status", runtimeHandler)
 	r.HandleFunc("/pick", pickHandler)
@@ -74,6 +75,10 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	delete(allAds, ad.Id)
 }
 
+func clearHandler(w http.ResponseWriter, r *http.Request) {
+	allAds = make(map[int]ads.Ads)
+}
+
 func listHandler(w http.ResponseWriter, r *http.Request) {
 	allAds, _ := json.Marshal(allAds)
 	response(string(allAds), w, r)
@@ -106,10 +111,12 @@ func pickHandler(w http.ResponseWriter, r *http.Request) {
 func randomHandler(w http.ResponseWriter, r *http.Request) {
 	var ad ads.Ads
 	var i int
-	for i = 0; i < 100000; i++ {
+	for i = 0; i < 100; i++ {
 		ad.Id = rand.Intn(4000000000)
 		ad.Bid = rand.Float64() * 100
-		ad.Category = rand.Intn(20)
+		ad.Category = make([]int, 2)
+		ad.Category[0] = rand.Intn(3)
+		ad.Category[1] = rand.Intn(3)
 		allAds[ad.Id] = ad
 	}
 }
@@ -128,6 +135,6 @@ func bToMb(b uint64) uint64 {
 }
 
 func response(resp string, w http.ResponseWriter, r *http.Request) {
-	//w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	fmt.Fprintf(w, "%s", resp)
 }

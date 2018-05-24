@@ -1,5 +1,6 @@
 package placement
 
 type Placement struct {
-	Category int `json:"Category"`
+	Id       int   `json:"id"`
+	Category []int `json:"Category"`
 }
