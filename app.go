@@ -14,7 +14,7 @@ import (
 	"github.com/vininta-solution/bid/model/placement"
 )
 
-var allAds map[int]map[int]ads.Ads
+var allAds map[int]ads.Ads
 
 type pickRequest struct {
 	MinBid   float64 `json:"minBid"`
@@ -22,10 +22,11 @@ type pickRequest struct {
 }
 
 func main() {
-	allAds = make(map[int]map[int]ads.Ads)
+	allAds = make(map[int]ads.Ads)
 	r := http.NewServeMux()
 	r.HandleFunc("/", homeHandler)
 	r.HandleFunc("/add", addHandler)
+	r.HandleFunc("/delete", deleteHandler)
 	r.HandleFunc("/list", listHandler)
 	r.HandleFunc("/runtime-status", runtimeHandler)
 	r.HandleFunc("/pick", pickHandler)
@@ -56,7 +57,21 @@ func addHandler(w http.ResponseWriter, r *http.Request) {
 	m, _ := json.Marshal(ad)
 	response(string(m), w, r)
 
-	allAds[ad.Category][ad.Id] = ad
+	allAds[ad.Id] = ad
+}
+
+func deleteHandler(w http.ResponseWriter, r *http.Request) {
+	var ad ads.Ads
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = json.Unmarshal(body, &ad)
+	m, _ := json.Marshal(ad)
+	response(string(m), w, r)
+
+	allAds[ad.Id] = ad
 }
 
 func listHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +90,7 @@ func pickHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = json.Unmarshal(body, &adRequest)
 	placement.Category = adRequest.Category
-	for _, ad := range allAds[placement.Category] {
+	for _, ad := range allAds {
 		if ad.IsMatch(placement) {
 			if ad.Bid > winnerAds.Bid {
 				winnerAds = ad
@@ -95,11 +110,7 @@ func randomHandler(w http.ResponseWriter, r *http.Request) {
 		ad.Id = rand.Intn(4000000000)
 		ad.Bid = rand.Float64() * 100
 		ad.Category = rand.Intn(20)
-		if _, ok := allAds[ad.Category]; !ok {
-			//do something here
-			allAds[ad.Category] = make(map[int]ads.Ads)
-		}
-		allAds[ad.Category][ad.Id] = ad
+		allAds[ad.Id] = ad
 	}
 }
 
