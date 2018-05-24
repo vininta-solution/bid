@@ -71,7 +71,7 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 	m, _ := json.Marshal(ad)
 	response(string(m), w, r)
 
-	allAds[ad.Id] = ad
+	delete(allAds, ad.Id)
 }
 
 func listHandler(w http.ResponseWriter, r *http.Request) {
