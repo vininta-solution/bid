@@ -12,14 +12,10 @@ import (
 
 	"github.com/vininta-solution/bid/model/ads"
 	"github.com/vininta-solution/bid/model/placement"
+	"github.com/vininta-solution/bid/model/user"
 )
 
 var allAds map[int]ads.Ads
-
-type pickRequest struct {
-	MinBid   float64 `json:"minBid"`
-	Category []int   `category:"category"`
-}
 
 func main() {
 	allAds = make(map[int]ads.Ads)
@@ -88,15 +84,15 @@ func pickHandler(w http.ResponseWriter, r *http.Request) {
 	var winnerAds ads.Ads
 	var count int
 	var placement placement.Placement
-	var adRequest pickRequest
+	var user user.User
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = json.Unmarshal(body, &adRequest)
-	placement.Category = adRequest.Category
+	err = json.Unmarshal(body, &placement)
+	fmt.Printf("%v", placement)
 	for _, ad := range allAds {
-		if ad.IsMatch(placement) {
+		if ad.IsMatch(placement, user) {
 			if ad.Bid > winnerAds.Bid {
 				winnerAds = ad
 			}

@@ -1,6 +1,9 @@
 package ads
 
-import "github.com/vininta-solution/bid/model/placement"
+import (
+	"github.com/vininta-solution/bid/model/placement"
+	"github.com/vininta-solution/bid/model/user"
+)
 
 type Ads struct {
 	Id               int     `json:"id"`
@@ -10,7 +13,7 @@ type Ads struct {
 	ExcludePlacement []int   `json:"excludePlacement"`
 }
 
-func (ad *Ads) IsMatch(p placement.Placement) bool {
+func (ad *Ads) IsMatch(p placement.Placement, u user.User) bool {
 	var logic bool
 
 	if len(ad.Category) > 0 {
@@ -29,7 +32,15 @@ func (ad *Ads) IsMatch(p placement.Placement) bool {
 	}
 
 	if len(ad.OnlyPlacement) > 0 {
-
+		logic = false
+		for _, adPlacementId := range ad.OnlyPlacement {
+			if p.Id == adPlacementId {
+				logic = true
+			}
+		}
+		if logic == false {
+			return false
+		}
 	}
 
 	return true
